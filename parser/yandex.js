@@ -39,7 +39,6 @@ async function collectBusinessLinksFromSearchPage(page, { limit = 10 }, timing) 
   return uniq(links).slice(0, limit);
 }
 
-/** Раскрыть телефон; опционально вкладка «Контакты» (медленнее). */
 async function prepareYandexOrgPage(page, timing) {
   const t = timing || getParseTiming();
   await page.evaluate(() => window.scrollTo(0, Math.min(800, document.body.scrollHeight)));
@@ -68,7 +67,6 @@ async function prepareYandexOrgPage(page, timing) {
   await delay(t.prepareFinal);
 }
 
-/** Несколько вариантов кнопки «показать телефон» / «позвонить» на разных версиях вёрстки. */
 async function revealYandexOrgPhone(page, timing) {
   const t = timing || getParseTiming();
   const tryClick = async () => {
@@ -87,7 +85,7 @@ async function revealYandexOrgPhone(page, timing) {
           if (n > 0) return true;
         }
       } catch (e) {
-        /* next */
+
       }
     }
     return false;
@@ -212,7 +210,7 @@ async function extractBusinessFromPage(page, { city }) {
         if (!Array.isArray(j)) j = [j];
         for (const item of j) walkAggregateAndReviews(item, agg, reviewsLd);
       } catch (e) {
-        /* ignore */
+
       }
     }
 
@@ -354,7 +352,7 @@ async function parseYandexMaps({ niche, city, context, limit = 10 }) {
         lead.sourceLink = link;
         if (lead.name) leads.push(lead);
       } catch (e) {
-        /* ignore */
+
       }
       if (leads.length >= limit) break;
     }

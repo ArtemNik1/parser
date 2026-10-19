@@ -2,10 +2,6 @@ const { getParseTiming } = require('./parseTiming');
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/**
- * Открыть блок отзывов и прокрутить — иначе в DOM почти нет текста отзывов (только шапка карточки).
- * `timing` из `getParseTiming()` — паузы и число скроллов.
- */
 async function openReviewsSection(page, timing) {
   const t = timing || getParseTiming();
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -20,7 +16,7 @@ async function openReviewsSection(page, timing) {
         return true;
       }
     } catch (e) {
-      /* ignore */
+
     }
     return false;
   };

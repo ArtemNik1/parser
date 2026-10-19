@@ -22,16 +22,15 @@ const TELEGRAM_TOKEN =
   getArgValue('--telegram-token') ||
   process.env.TELEGRAM_TOKEN ||
   process.env.TELEGRAM_BOT_TOKEN ||
-  process.env.TELEGRA_TOKEN; // на случай опечатки из ТЗ
+  process.env.TELEGRA_TOKEN;
 
 if (!TELEGRAM_TOKEN) {
-  // В проде лучше падать с понятной ошибкой, чтобы сразу заметили проблему с ENV.
+
   throw new Error('Missing TELEGRAM_TOKEN (or TELEGRA_TOKEN) in environment variables.');
 }
 
 const cities = ['Москва'];
 
-/** Пороги лидов (можно переопределить в .env): раньше 4.8 отсекала «идеальные» 4.9–5.0. */
 const MIN_RATING = Number(process.env.MIN_RATING ?? 2.8);
 const MAX_RATING = Number(process.env.MAX_RATING ?? 5.0);
 const MIN_TOTAL_REVIEWS = Number(process.env.MIN_TOTAL_REVIEWS ?? 1);
@@ -40,9 +39,9 @@ const MAX_LEADS = Number(process.env.MAX_LEADS || 20);
 const LEADS_TARGET_MIN = Number(process.env.LEADS_TARGET_MIN || 5);
 const LEADS_TARGET_MAX = Number(process.env.LEADS_TARGET_MAX || 8);
 const PER_SOURCE_LIMIT = Number(process.env.PER_SOURCE_LIMIT || 35);
-/** true — не дергать 2GIS (примерно вдвое быстрее цикл по городу). */
+
 const SKIP_2GIS = String(process.env.SKIP_2GIS || 'false').toLowerCase() === 'true';
-/** Сумма вхождений маркеров боли по темам. 0 — не требовать совпадений (только фильтр по рейтингу). 1+ — строже. */
+
 const MIN_PAIN_SCORE = (() => {
   const n = Number(process.env.MIN_PAIN_SCORE ?? 0);
   return Number.isFinite(n) ? n : 0;
@@ -57,7 +56,7 @@ function randomLeadTarget() {
 const HEADLESS = String(process.env.HEADLESS || 'true').toLowerCase() !== 'false';
 const USER_AGENT = process.env.USER_AGENT || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
-const PROXY_URL = process.env.PROXY_URL || null; // например: http://user:pass@host:port
+const PROXY_URL = process.env.PROXY_URL || null;
 const TELEGRAM_PROXY_URL = getArgValue('--telegram-proxy') || process.env.TELEGRAM_PROXY_URL || null;
 
 let bot;
@@ -69,9 +68,6 @@ if (TELEGRAM_PROXY_URL) {
   bot = new Telegraf(TELEGRAM_TOKEN);
 }
 
-// В некоторых сетях Telegram API может быть нестабилен и `launch()` падает на `getMe()`.
-// Чтобы не блокировать старт, задаём заглушку botInfo заранее.
-// Polling/обработка апдейтов всё равно потребуют доступа к Telegram.
 bot.botInfo = {
   id: 0,
   is_bot: true,
@@ -83,11 +79,11 @@ bot.botInfo = {
 };
 
 bot.catch((err) => {
-  // Telegraf/Telegram API иногда падает с сетью; печатаем ошибку, чтобы было что диагностировать.
+
   console.error('Telegraf error:', err);
 });
 
-const parseLocks = new Set(); // предотвращаем одновременные парсинги одним пользователем
+const parseLocks = new Set();
 
 function getNicheFromCommand(text) {
   if (!text) return null;
@@ -95,7 +91,6 @@ function getNicheFromCommand(text) {
   return m?.[1]?.trim() || null;
 }
 
-/** Упрощает запрос к картам: «барбершопы» → «барбершоп» (часто лучше находит выдачу). */
 function normalizeNicheForSearch(niche) {
   const s = String(niche || '').trim();
   if (s.length > 4 && /[а-яёa-z]ы$/i.test(s)) return s.slice(0, -1);
@@ -136,7 +131,6 @@ function passesRatingAndReviewFilters(lead) {
   const totalReviews = getTotalReviews(lead);
   if (Number.isFinite(totalReviews) && totalReviews >= MIN_TOTAL_REVIEWS) return true;
 
-  /** Часто парсер не вытащил ни числа отзывов, ни текстов (вёрстка/ленивая загрузка) — не отсекаем, если есть рейтинг карточки. */
   if (rating !== null && (lead.name || lead.sourceLink || lead.link)) return true;
 
   return false;
@@ -155,7 +149,7 @@ function dedupeLeads(leads) {
 
     const prevRating = getRating(prev) ?? -1;
     const nextRating = getRating(l) ?? -1;
-    // Если одинаковое название — оставляем тот, где рейтинг выше и/или больше отзывов.
+
     if (nextRating > prevRating) map.set(key, l);
     else {
       if ((getTotalReviews(l) || 0) > (getTotalReviews(prev) || 0)) map.set(key, l);
@@ -197,7 +191,7 @@ async function parseNiche(niche, chatId) {
     const allLeads = [];
 
     for (const city of cities) {
-      // Последовательно по анти-блоку: меньше шансов словить бан из-за параллельных сессий.
+
       bot.telegram.sendMessage(chatId, `Ищу лиды в ${city} по нише: "${searchNiche}"...`);
 
       try {
@@ -223,10 +217,8 @@ async function parseNiche(niche, chatId) {
 
     const deduped = dedupeLeads(allLeads);
 
-    // Базовые фильтры "хороших лидов"
     const filtered = deduped.filter((l) => passesRatingAndReviewFilters(l));
 
-    // Сначала ниже рейтинг (часто больше сигналов боли), затем без сайта
     filtered.sort((a, b) => {
       const ra = getRating(a);
       const rb = getRating(b);
@@ -320,7 +312,6 @@ bot.command('parse', async (ctx) => {
       return;
     }
 
-    // Отправка лидов с небольшой паузой (бережёт от rate limit Telegram).
     for (let i = 0; i < leads.length; i++) {
       const msg = formatLeadMessage(leads[i]);
       await ctx.replyWithHTML(msg, { disable_web_page_preview: true });
@@ -334,7 +325,6 @@ bot.command('parse', async (ctx) => {
   }
 });
 
-// Запуск (Ctrl+C остановит процесс)
 bot.launch();
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));

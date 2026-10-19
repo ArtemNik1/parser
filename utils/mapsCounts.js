@@ -1,7 +1,3 @@
-/**
- * Число отзывов из текста страницы: только явные «N отзыв(ов/а)»,
- * не путаем с «N фото / фотографий».
- */
 function extractReviewCountFromBodyText(bodyText) {
   const raw = String(bodyText || '');
   const re = /\b(\d{1,6})\s*(?:отзыв|отзыва|отзывов)\b/gi;

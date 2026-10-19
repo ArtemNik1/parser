@@ -1,8 +1,3 @@
-/**
- * FAST_PARSE=false — медленнее, стабильнее на капризной вёрстке.
- * SKIP_CONTACTS_TAB=true — не кликать «Контакты» на Яндексе (экономия ~2–4 с на карточку).
- * SKIP_2GIS=true — только Яндекс.Карты (в 2 раза быстрее цикл города).
- */
 const FAST = String(process.env.FAST_PARSE ?? 'true').toLowerCase() !== 'false';
 const SKIP_CONTACTS = String(process.env.SKIP_CONTACTS_TAB ?? (FAST ? 'true' : 'false')).toLowerCase() === 'true';
 

@@ -163,7 +163,7 @@ async function extractBusinessFromPage(page, { city }) {
         if (!Array.isArray(j)) j = [j];
         for (const item of j) walkAggregateAndReviews(item, agg, reviewsLd);
       } catch (e) {
-        /* ignore */
+
       }
     }
 
@@ -288,7 +288,7 @@ async function parse2gis({ niche, city, context, limit = 10 }) {
         const lead = await extractBusinessFromPage(page, { city });
         if (lead.name) leads.push(lead);
       } catch (e) {
-        /* ignore */
+
       }
 
       if (leads.length >= limit) break;

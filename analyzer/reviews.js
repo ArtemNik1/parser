@@ -2,7 +2,6 @@ const { isYandexCardChromeText } = require('../utils/reviewNoise');
 
 const DEFAULT_NEGATIVE_MAX_RATING = 3;
 
-/** Темы, по которым считаем «боль» для отбора лидов (не похвала). */
 const PAIN_THEME_IDS = [
   'price',
   'queue_wait',
@@ -183,9 +182,6 @@ function excerpt(text, max = 150) {
   return `${t.slice(0, max - 1)}…`;
 }
 
-/**
- * Короткие выдержки из реального текста отзывов (по совпадению с паттернами боли).
- */
 function collectEvidenceQuotes(reviewRows, scores) {
   const quotes = [];
   const rows = reviewRows || [];
@@ -276,7 +272,6 @@ function leadReviewCount(lead) {
   return Array.isArray(lead.reviews) ? lead.reviews.length : 0;
 }
 
-/** Средний рейтинг при большом числе отзывов — часто есть недовольные, даже без ключевых слов в выборке. */
 function ratingReputationHeuristic(lead) {
   if (lead == null) return false;
   const r = typeof lead.rating === 'number' ? lead.rating : parseNumberRu(lead.rating);
@@ -287,15 +282,11 @@ function ratingReputationHeuristic(lead) {
     return r >= 3.0 && r <= 4.45;
   }
 
-  /** Парсер часто не вытащил число отзывов (0) — тогда «средняя» зона только по рейтингу карточки. */
   return r >= 3.15 && r <= 4.4;
 }
 
-/**
- * Есть ли смысл считать организацию лидом: явная боль в темах, низкие звёзды, негативные отзывы или контраст в тексте.
- */
 function hasConcretePain(analysis, reviewRows, minPainScore = 1, lead = null) {
-  /** 0 — пропускать отбор по маркерам боли (широкие ниши: мало явных «болей» в тексте). */
+
   if (typeof minPainScore === 'number' && minPainScore <= 0) return true;
 
   if (process.env.ENABLE_RATING_HEURISTIC !== 'false' && lead && ratingReputationHeuristic(lead)) return true;

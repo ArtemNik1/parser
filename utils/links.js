@@ -1,4 +1,3 @@
-/** Ссылки на карты / Яндекс-сервисы — не считаем сайтом и не показываем как соцсети компании. */
 function isMapsOrYandexServiceUrl(href) {
   if (!href) return true;
   const u = href.toLowerCase();
@@ -58,7 +57,6 @@ function socialLabelForUrl(href) {
   }
 }
 
-/** Оставляем только ссылки, похожие на соцсети компании. */
 function filterCompanySocialUrls(urls) {
   const seen = new Set();
   const out = [];
@@ -74,7 +72,6 @@ function filterCompanySocialUrls(urls) {
   return out.slice(0, 12);
 }
 
-/** Первый подходящий URL сайта компании (не карты, не соцсети). */
 function pickWebsiteUrl(httpLinks) {
   const socialDomains = ['instagram.com', 'facebook.com', 'youtube.com', 'vk.com', 'ok.ru', 't.me', 'telegram.me', 'wa.me', 'whatsapp.com', 'tiktok.com'];
   for (const href of httpLinks || []) {

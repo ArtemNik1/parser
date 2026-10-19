@@ -4,9 +4,6 @@ function excerpt(s, max) {
   return `${t.slice(0, max - 1)}…`;
 }
 
-/**
- * Оффер только в связке с темами и выдержками из отзывов (без «воды»).
- */
 function generateOffer({ themes, offerHints, hasWebsite, evidenceQuotes = [], pains = [] }) {
   const t = themes || {};
   let hints = (Array.isArray(offerHints) ? offerHints : []).filter((h) => h && h !== 'fallback');
